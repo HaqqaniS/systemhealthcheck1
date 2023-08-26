@@ -1,0 +1,20 @@
+@echo off
+
+set /p remote_machine=Enter the remote machine name or IP address: 
+
+rem Check network connectivity using ping.
+ping %remote_machine%
+if %errorlevel%==0 (
+    echo Network connectivity to %remote_machine% is successful.
+) else (
+    echo Network connectivity to %remote_machine% failed.
+)
+
+rem Check DNS resolution using nslookup.
+set /p domain=Enter a domain to resolve using DNS: 
+nslookup %domain% %remote_machine%
+
+rem Get IP configuration using ipconfig.
+psexec \\%remote_machine% ipconfig /all
+
+pause
