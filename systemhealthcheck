@@ -1,0 +1,41 @@
+@echo off
+setlocal enabledelayedexpansion
+
+rem Define thresholds for CPU and memory usage (in percentage).
+set max_cpu_usage=85
+set max_memory_usage=85
+
+:check_health
+cls
+echo Performing System Health Check...
+
+rem Get CPU usage percentage.
+for /f "skip=1 tokens=1" %%a in ('wmic cpu get loadpercentage') do (
+    set cpu_usage=%%a
+    goto :check_memory
+)
+
+:check_memory
+rem Get available memory percentage.
+for /f "tokens=2" %%a in ('wmic os get freephysicalmemory^,totalvisiblememorysize ^| findstr /r /c:"[0-9]"') do (
+    set /a total_memory=%%a / 1024
+    set /a free_memory=%%a / 1024
+    set /a used_memory=total_memory - free_memory
+    set /a memory_usage=(used_memory * 100) / total_memory
+    goto :evaluate_health
+)
+
+:evaluate_health
+echo CPU Usage: !cpu_usage!%
+echo Memory Usage: !memory_usage!%
+
+if !cpu_usage! gtr %max_cpu_usage% (
+    echo High CPU usage detected! Alert your administrator.
+)
+
+if !memory_usage! gtr %max_memory_usage% (
+    echo High memory usage detected! Alert your administrator.
+)
+
+timeout 5
+goto :check_health
